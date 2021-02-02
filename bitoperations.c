@@ -1,31 +1,34 @@
 #include <stdio.h>
 
+void bin_print(int i)
+{
+    // Number of bits in an integer.
+    int j = (sizeof(int) * 8);
+
+    // temp variable
+    int k;
+
+    for(j-- ; j >= 0; j--)
+    {
+        k = ((1 << j) & i) ? 1: 0;
+        printf("%d", k);
+    }
+}
+
 int main(int argc, char *argv[]) 
 {
     int i = 241;
 
-    printf("Dec: %d\n", i);
-    printf("Hex: %x\n", i);
-
-    printf("Size of an i: %ld\n", sizeof(i));
-    printf("Size of an int: %ld\n", sizeof(int));
-    printf("Size of char: %ld\n", sizeof(char));
-
-    char c = 41;
-
-    printf("c in char is: %c\n", c);
-    printf("c in int is: %d\n", c);
-
-    int j = 1000000000;
-
-    printf("j in int is: %d\n", j);
-    printf("j in char is: %c\n", j);
-    
-    for (int i = 0; i < 10; i++)
-    {
-       printf("1");
-    }
+    printf("Original:  ");
+    bin_print(i);
     printf("\n");
 
+    for (int j = 0; j < 40; j++)
+    {
+        printf("%3d << %2d: ", i, j);
+        bin_print(i << j);
+        printf("\n");
+    }
+    
     return 0;
 }
