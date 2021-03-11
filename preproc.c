@@ -1,44 +1,61 @@
 #include <stdio.h>
 #include <inttypes.h>
 
+#define W 32
+#define WORD uint32_t
+#define PF PRIX32
 #define BYTE uint8_t
 
-void bin_print(BYTE i)
+union Block
 {
-    // Number of bits in an integer.
-    int j = (sizeof(BYTE) * 8);
-
-    // temp variable
-    int k;
-
-    // Loop over the num of bits in i, left to right.
-    for(j-- ; j >= 0; j--)
-    {
-        // pick out the J^th bit of i
-        k = ((1 << j) & i) ? 1 : 0;
-        // print k
-        printf("%d", k);
-    }
-}
+    BYTE bytes[64];
+    WORD words[16];
+};
 
 int main(int argc, char *argv[])
 {
-    BYTE b;
-    FILE *f; 
-    size_t nobytes;
+    int i; // iterator
+    union Block B; // the current block
+    uint64_t nobits = 0; // total number of bits read
+    FILE *f; // File pointer for reading
+    f = fopen(argv[1], "r"); // open file from command line
+    size_t nobytes; // num of bytes read
 
-    f = fopen(argv[1], "r");
-
-    nobytes = fread(&b, 1, 1, f);
-
-    while(nobytes)
+    // try to read bytes
+    nobytes = fread(B.bytes, 1, 64, f);
+    printf("Read %d bytes.\n", nobytes);
+    // update number of bits read
+    nobits = nobits + (8*nobytes);
+    // print the 16 32-bit words
+    for (i = 0; i < 16; i++)
     {
-        bin_print(b);
-        nobytes = fread(&b, 1, 1, f);     
+        printf("%08" PF " ", B.words[i]);
+        if((i + 1) % 8 == 0)
+        {
+            printf("\n");
+        }
+    }// for
+    
+    while(!feof(f))
+    {
+        nobytes = fread(&B.bytes, 1, 64, f);  
+        printf("Read %d bytes.\n", nobytes);
+        nobits = nobits + (8*nobytes);   
+
+        for (i = 0; i < 16; i++)
+        {
+            printf("%08" PF " ", B.words[i]);
+            if((i + 1) % 8 == 0)
+            {
+                printf("\n");
+            }
+        }// for
     }// while
 
+    // close file
     fclose(f);
-    printf("\n");
+    // print total number of bits read
+    printf("Total bits read: %d.\n", nobits);
 
     return 0;
 }
