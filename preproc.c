@@ -6,56 +6,123 @@
 #define PF PRIX32
 #define BYTE uint8_t
 
-union Block
+// SHA256 works on blocks of 512 bits.
+union Block 
 {
+    // 8 x 64 = 512 - dealing with block as bytes.
     BYTE bytes[64];
+    // 32 x 16 = 512 - dealing with block as words.
     WORD words[16];
+    // 64 x 8 = 512 - dealing with the last 64 bits of last block.
+    uint64_t sixf[8];
 };
 
-int main(int argc, char *argv[])
+// For keeping track of where we are with the input message/padding.
+enum Status 
 {
-    int i; // iterator
-    union Block B; // the current block
-    uint64_t nobits = 0; // total number of bits read
-    FILE *f; // File pointer for reading
-    f = fopen(argv[1], "r"); // open file from command line
-    size_t nobytes; // num of bytes read
+    READ, PAD, END
+};
 
-    // try to read bytes
-    nobytes = fread(B.bytes, 1, 64, f);
-    printf("Read %d bytes.\n", nobytes);
-    // update number of bits read
-    nobits = nobits + (8*nobytes);
-    // print the 16 32-bit words
-    for (i = 0; i < 16; i++)
+// Returns 1 if it created a new block from original message or padding.
+// Returns 0 if all padded message has already been consumed.
+int next_block(FILE *f, union Block *B, enum Status *S, uint64_t *nobits) 
+{
+    // Number of bytes read.
+    size_t nobytes;
+
+    if (*S == END) 
     {
-        printf("%08" PF " ", B.words[i]);
-        if((i + 1) % 8 == 0)
+        return 0;
+    } 
+    else if (*S == READ) 
+    {
+        // Try to read 64 bytes from the input file.
+        nobytes = fread(B->bytes, 1, 64, f);
+        // Calculate the total bits read so far.
+        *nobits = *nobits + (8 * nobytes);
+
+        // Enough room for padding.
+        if (nobytes == 64) 
         {
-            printf("\n");
-        }
-    }// for
-    
-    while(!feof(f))
-    {
-        nobytes = fread(&B.bytes, 1, 64, f);  
-        printf("Read %d bytes.\n", nobytes);
-        nobits = nobits + (8*nobytes);   
+            // This happens when we can read 64 bytes from f.
+            return 1;
+        } 
+        else if (nobytes < 56) 
+        {
+            // This happens when we have enough roof for all the padding.
+            // Append a 1 bit (and seven 0 bits to make a full byte).
+            B->bytes[nobytes] = 0x80; // In bits: 10000000.
 
-        for (i = 0; i < 16; i++)
+            // Append enough 0 bits, leaving 64 at the end.
+            for (nobytes++; nobytes < 56; nobytes++) 
+            {
+                B->bytes[nobytes] = 0x00; // In bits: 00000000
+            }
+
+            // Append length of original input (CHECK ENDIANESS).
+            B->sixf[7] = *nobits;
+            // Say this is the last block.
+            *S = END;
+        } 
+        else 
+        {
+            // Got to the end of the input message and not enough room
+            // in this block for all padding.
+            // Append a 1 bit (and seven 0 bits to make a full byte.)
+            B->bytes[nobytes] = 0x80;
+
+            // Append 0 bits.
+            for (nobytes++; nobytes < 64; nobytes++) 
+            {
+                 // Error: trying to write to 
+                B->bytes[nobytes] = 0x00; // In bits: 00000000
+            }
+
+            // Change the status to PAD.
+            *S = PAD;
+        }
+    } 
+    else if (*S == PAD) 
+    {
+        // Append 0 bits.
+        for (nobytes = 0; nobytes < 56; nobytes++) 
+        {
+            B->bytes[nobytes] = 0x00; // In bits: 00000000
+        }
+        // Append nobits as an integer. CHECK ENDIAN!
+        B->sixf[7] = *nobits;
+        // Change the status to END.
+        *S = END;
+    }   
+    return 1;
+}
+
+
+int main(int argc, char *argv[]) 
+{ 
+    int i;// Iterator.
+    union Block B;// The current block. 
+    uint64_t nobits = 0;// Total number of bits read.
+    enum Status S = READ;// Current status of reading input. 
+    FILE *f;// File pointer for reading.
+    f = fopen(argv[1], "r");// Open file from command line for reading.
+    
+    // Loop through (preprocessed) the blocks.
+    while (next_block(f, &B, &S, &nobits)) 
+    {
+        // Print the 16 32-bit words.
+        for (i = 0; i < 16; i++) 
         {
             printf("%08" PF " ", B.words[i]);
-            if((i + 1) % 8 == 0)
-            {
-                printf("\n");
-            }
-        }// for
-    }// while
+        }
+        printf("\n");
+    }
 
-    // close file
+    // Close the file.
     fclose(f);
-    // print total number of bits read
-    printf("Total bits read: %d.\n", nobits);
+
+    // Print total number of bits read.
+    printf("Total bits read: %ld.\n", nobits);
 
     return 0;
 }
