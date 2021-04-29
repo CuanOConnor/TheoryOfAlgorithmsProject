@@ -3,20 +3,28 @@
 #include <byteswap.h>
 #include <stdlib.h>
 
-#define W 32
-#define WORD uint32_t
-#define PF PRIX32
+#define W 64
+#define WORD uint64_t
+#define PF PRIX64
 #define BYTE uint8_t
 
-// SHA256 works on blocks of 512 bits.
+// struct definition
+struct Point
+{
+    int x;
+    int y;
+};
+
+// Similar to union in SHA512 impl
+// SHA512 works on blocks of 1024
 union Block 
 {
     // 8 x 64 = 512 - dealing with block as bytes.
-    BYTE bytes[64];
+    BYTE bytes[128];
     // 32 x 16 = 512 - dealing with block as words.
-    WORD words[16];
+    WORD words[64];
     // 64 x 8 = 512 - dealing with the last 64 bits of last block.
-    uint64_t sixf[8];
+    uint64_t sixf[16];
 };
 
 // For keeping track of where we are with the input message/padding.
@@ -39,24 +47,24 @@ int next_block(FILE *f, union Block *B, enum Status *S, uint64_t *nobits)
     else if (*S == READ) 
     {
         // Try to read 64 bytes from the input file.
-        nobytes = fread(B->bytes, 1, 64, f);
+        nobytes = fread(B->bytes, 1, 128, f);
         // Calculate the total bits read so far.
-        *nobits = *nobits + (8 * nobytes);
+        *nobits = *nobits + (16 * nobytes);
 
         // Enough room for padding.
-        if (nobytes == 64) 
+        if (nobytes == 128) 
         {
-            // This happens when we can read 64 bytes from f.
+            // This happens when we can read 128 bytes from f.
             return 1;
         } 
-        else if (nobytes < 56) 
+        else if (nobytes < 121) 
         {
             // This happens when we have enough roof for all the padding.
             // Append a 1 bit (and seven 0 bits to make a full byte).
             B->bytes[nobytes] = 0x80; // In bits: 10000000.
 
             // Append enough 0 bits, leaving 64 at the end.
-            for (nobytes++; nobytes < 56; nobytes++) 
+            for (nobytes++; nobytes < 122; nobytes++) 
             {
                 B->bytes[nobytes] = 0x00; // In bits: 00000000
             }
@@ -81,13 +89,13 @@ int next_block(FILE *f, union Block *B, enum Status *S, uint64_t *nobits)
             }
 
             // Change the status to PAD.
-            *S = PAD;
+            *S = END;
         }
     } 
     else if (*S == PAD) 
     {
         // Append 0 bits.
-        for (nobytes = 0; nobytes < 56; nobytes++) 
+        for (nobytes = 0; nobytes < 122; nobytes++) 
         {
             B->bytes[nobytes] = 0x00; // In bits: 00000000
         }
