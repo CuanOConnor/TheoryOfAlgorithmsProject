@@ -6,6 +6,9 @@
  - use Make to compile the c program then run it with its args.
  - i.e. **Make SHA512**, then -> **./SHA512 input.txt**
  - The included preproc512 file can also be run this way.
+ - Alternatively you can use the Makefile to run the above mentioned scripts.
+ - As specified in the project spec, a tests.sh file has also been included.
+ - This can be run using **make tests**
 
 ## Contents
  - Contains a folder called LabWork, which encompases all the labs and learning examples completed throughout the semester.
