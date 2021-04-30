@@ -18,11 +18,16 @@ SHA512 is a particular cryptographic hashing function,  derived from its parent 
 
 ## Why we cant just reverse SHA-512 to retrieve the original message
 
-A good description of why a hash cannot be reverse is if you take the result of the *sum* of two numbers [4]. You are given the result but *not* the two numbers used. If the number is for example 200, then there are *n power the result* possibilities of combinations. The idea is that if you know the hash value it is extrememly difficult to determine the original message or input. Hundreds of one-way operations take place on the "message/input" simultaneously and the results from earlier operations are used in later operations. So when you try to reverse it (and guess the two inputs in a later stage), the only way to tell if the numbers you are guessing are correct is to work all the way back through the hash algorithm. Guesses made later down the stage have their own rate of error when you guess, this has a butterfly affect on any subsequent guesses you make, thus reducing your correctness and increases the amount of times you must guess again. There are simply too many combinations of numbers, and the more combinations, the more secure it is. 
-  
-One other feature of SHA is that it makes use of non-linear operations AND linear operations. This means that attempting to use algebreic methods to solver the input from the output hash is extremely difficult. It serves to add randomness and non-logic to the digested hash. While it is "theoretically possible" to reverse a hash, the sheer number of attempts it would as outlined above, makes such an event a non-issue when considering what hashing algorithm to use or even using it at all.
+A good description of why a hash cannot be reverse is if you take the result of the *sum* of two numbers [4]. You are given the result but *not* the two numbers used. If the number is for example 200, then there are *n power the result* possibilities of combinations. The idea is that if you know the hash value it is extrememly difficult to determine the original message or input. Hundreds of one-way operations take place on the "message/input" simultaneously and the results from earlier operations are used in later operations. So when you try to reverse it (and guess the two inputs in a later stage), the only way to tell if the numbers you are guessing are correct is to work all the way back through the hash algorithm. Guesses made later down the stage have their own rate of error when you guess, this has a butterfly affect on any subsequent guesses you make, thus reducing your correctness and increases the amount of times you must guess again. There are simply too many combinations of numbers, and the more combinations, the more secure it is.
 
 ## Can you design an algorithm that, given enough time, will find input messages that give each of the possible 512-bit strings?
+
+A feature of SHA is that it makes use of non-linear operations AND linear operations. This means that attempting to use algebreic methods to solve the input from the output hash is extremely difficult. It serves to add randomness and non-logic to the digested hash. While it is "theoretically possible" to find the given input messages, the sheer number of attempts it would take as outlined above, makes such an event a non-issue when considering what hashing algorithm to use.
+  
+Given enough time, assuming that time is infinite then the direct answer is yes, however there will never be a scenario where time is infinite so the answer is then no you could no feasibly create an algorithm to find the input messages with our current technological limitations and the time it takes them to check potential combinations.
+
+## How difficult is it to find a hash digest beginning with at least twelve zeros?
+
 
 
 
