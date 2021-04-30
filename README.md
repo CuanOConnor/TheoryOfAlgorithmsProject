@@ -37,3 +37,7 @@ Given enough time, assuming that time is infinite then the direct answer is yes,
  - [2] Hashing blocks; From a blockchain perspective; https://blockgeeks.com/guides/what-is-hashing/#:~:text=In%20simple%20terms%2C%20hashing%20means,output%20of%20a%20fixed%20length.
  - [3]  sha-2; Wiki; https://en.wikipedia.org/wiki/SHA-2
  - [4] Numbers example drawn from StackExchange question; Crypto StackExchange; https://crypto.stackexchange.com/questions/45377/why-cant-we-reverse-hashes
+ - [5] Cryptographic hash functions; tutorialspoint; helpful for research;  https://www.tutorialspoint.com/cryptography/cryptography_hash_functions.htm
+ - [6] SHA512 hash calculator; For testing my input file on SHA512.c; https://abunchofutils.com/u/computing/sha512-hash-calculator/
+ - [7] Understanding command line args in c; https://www.cprogramming.com/tutorial/c/lesson14.html
+ - [8] Info for utilizing uncommon data types in c; tutorialspoint; https://www.tutorialspoint.com/cprogramming/c_data_types.htm
